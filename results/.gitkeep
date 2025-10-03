@@ -1,0 +1,7 @@
+# Keep this directory in git but ignore generated files
+# This file ensures the results/ directory structure is preserved
+
+# The .gitignore file will exclude generated files like:
+# *.png, *.json, etc.
+
+# But we want to keep the directory structure for the project

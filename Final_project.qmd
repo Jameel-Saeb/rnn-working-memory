@@ -1,0 +1,251 @@
+---
+title: "Decoding the working memory capacity of recurrent neural network models"
+author: Vivian Kang, Jameel Saeb, Chetanya Singh, Ah-Young Moon
+date: today
+format: 
+    revealjs: default
+---
+
+## Background 
+
+<div style="font-size: 0.6em;">
+Working memory serves as the brain's temporary information workspace, allowing us to hold and manipulate data essential for reasoning, language, and decision-making. Research consistently shows that interconnected neural networks in the prefrontal cortex sustain this vital cognitive function through persistent activity patterns.
+While biological neurons maintain information through sophisticated mechanisms—including synaptic plasticity, attractor dynamics, and coordinated oscillations—Recurrent Neural Networks (RNNs) provide computational models that capture these temporal dynamics. Through their feedback connections, RNNs can preserve information across time sequences, making them valuable tools for modeling memory processes.
+Recent theoretical advances by Barak and Tsodyks (2014) have illuminated the critical balance between stability and capacity in neural systems. Their work demonstrates how network parameters—particularly connection strength and sparsity—directly shape a system's ability to store multiple items without cross-interference. Our project extends this research using Neuromatch Academy's RNN framework to systematically investigate how key parameters like recurrent gain (g) and temporal delays influence sequential information processing and retention.
+By analyzing these models' internal states and decoding capabilities, we aim to clarify the computational boundaries of RNN-based memory systems while drawing meaningful parallels to the neural foundations of human working memory.
+
+Decoder.py contains the code for our decoder and the training loop. Generate_td.py has the code for generating the training data, with the code provided by the project guide for the RNN, and the code for making the training pairs for different delays.
+</div>
+
+## Overview
+
+Our project is based on the neuromatch template “The working memory capacity of recurrent neural network models”, and “Working models of working memory” (Barak and Tsodyks 2014).
+
+The project focuses on understanding the different methods that recurrently connected populations in the human brain employ to retain information over time. This corresponds to questions 1 through 5 in the project guide.
+
+## Setup and Method
+
+<div style="font-size: 0.73em;">
+
+**RNN:** The Neuromatch project template provided a pretrained recurrent neural network to simulate the recurrently connected populations of neurons in the brain, and their strategies to hold information in working memory.  
+<br>
+
+**Data Generation:** The neuromatch project template also provides a function to generate the input sequence or input data for the RNN. It uses Euler's method to simulate the evolution of model neuron firing rates given the input_layer firing rates. It then generates a sequence of inputs according to different parameters in the model such as how sensitive the weights are or how strongly connected they are, or how interconnected the neurons in the pool are.  
+<br>
+
+**Decoder:** For the decoder we implemented a simple neural network. Some of the parameters we chose were a 0.001 learning rate, 64 hidden dimensions. We also utilized the standard adam optimizer, and the cross entropy loss function since we are doing a multi class classification problem. Ie. from the network state it is given, it should predict what Input was activated a few time steps before.  
+
+</div>
+
+
+## Training Data
+
+::: {.columns}
+
+::: {.column width="70%"}
+For the training data we wrote code that utilizes the RNN model provided and the make_input function also provided to make training pairs. Our code collects the network state (which of the 1000 neurons are activated) at time t, and which input state was activated at X time steps before time t. It does this for each time step, and a sequence length we choose. It then converts the states and inputs into two numpy arrays.
+
+:::
+
+::: {.column width="30%"}
+<center>
+<video src="IMG_1723.mp4" height="380px" controls></video>
+<br>
+<img src="data.png" height="300px" />
+</center>
+:::
+
+:::
+
+## Steps taken:
+
+<div style="font-size: 0.8em;">
+
+1. Write code for a simple neural network which will serve as our decoder
+2. Train our decoder to predict the network state at time t-X, given network state at time t, for five different X values (QUESTION 1)
+3. Test how model performance changes for varying values of sensitivity to synaptic weight changes (g) (QUESTION 2)
+4. Change the magnitude of the input data and see how it affects model performance (QUESTION 3)
+5. Test a stream of inputs as opposed to a single pulse to see model performance (QUESTION 4)
+6. Compare subset based vs. magnitude based encoding strategies for model performance (QUESTION 5)
+
+</div>
+
+
+## Results of Decoder for Different Time Delays
+
+::: {.columns}
+
+::: {.column width="70%"}
+
+In this first part, we aimed to explore how different delays (i.e., different values of \( X \)) affect the decoder's performance. Below are the test accuracies obtained for various delay values:
+
+- **Delay = 20** → Test Accuracy: **0.6598**
+- **Delay = 15** → Test Accuracy: **0.7774**
+- **Delay = 10** → Test Accuracy: **0.7694**
+- **Delay = 5**  → Test Accuracy: **0.9320**
+
+:::
+
+::: {.column width="30%"}
+<center>
+<video src="IMG_1724.mp4" height="300px" controls></video>
+<br>
+<img src="g_1.png" height="250px" />
+</center>
+:::
+
+:::
+
+## Decoder Performance across different g-values
+
+
+
+<div style="display: grid; grid-template-columns: 1fr 1fr;">
+
+  <div><img src="Figures/g_0.5.png" width="100%"></div>
+  <div><img src="g_1.png" width="100%"></div>
+  <div><img src="g_1.5.png" width="100%"></div>
+  <div><img src="g_2.png" width="100%"></div>
+
+</div>
+<div style="font-size: 14px; margin-top: 10px;">
+  <strong>Summary:</strong><br>
+  As <code>g</code> increases, decoder performance at short delays remains high across all values. However, performance at longer delays deteriorates with higher <code>g</code>. This suggests that larger gain values introduce more chaotic or unstable neural dynamics, which degrade the network's ability to maintain memory over time. Lower <code>g</code> values preserve longer-term memory but may limit representational richness for short delays. Therefore, there is a trade-off between memory stability and dynamic richness controlled by <code>g</code>.
+</div>
+
+
+
+## Results of Changing Number of Neurons Receiving Inputs
+<div style="font-size: 0.6em;">
+
+To test how the number of neurons receiving input affects working memory performance, we varied the sparsity of the input weight matrix (`spIn`) while holding the input gain (`gIn`) constant. We trained decoders across multiple delay values to assess how changing the density of connections from the input layer to the recurrent pool influences memory retention.
+
+
+**Findings:**
+
+- We tested values of `spIn = 0.01, 0.05, 0.1, 0.2`.
+- For low `spIn` (0.01), performance at short delays remained high, but decayed rapidly at longer delays.
+- As `spIn` increased to 0.05 and 0.1, performance improved across all delays, suggesting a richer input signal allows for more stable internal representations.
+- At very high `spIn` (0.2), performance started to slightly degrade at short delays, potentially due to interference from overlapping inputs.
+
+**Conclusion:**  
+There exists an optimal input sparsity range (around 0.05–0.1) that balances information injection without overwhelming the network’s internal memory state. Too sparse and the network underperforms; too dense and interference increases.
+</div>
+## Graphs
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+
+<div>
+<center>
+<img src="Figures/SpIn_values/loss_curves_spIn_0_01.png" width="100%" />
+<p style="font-size: 0.8em;"><strong>spIn = 0.01</strong></p>
+</center>
+</div>
+
+<div>
+<center>
+<img src="Figures/SpIn_values/loss_curves_spIn_0_05.png" width="100%" />
+<p style="font-size: 0.8em;"><strong>spIn = 0.05</strong></p>
+</center>
+</div>
+
+<div>
+<center>
+<img src="Figures/SpIn_values/loss_curves_spIn_0_1.png" width="100%" />
+<p style="font-size: 0.8em;"><strong>spIn = 0.1</strong></p>
+</center>
+</div>
+
+<div>
+<center>
+<img src="Figures/SpIn_values/loss_curves_spIn_0_2.png" width="100%" />
+<p style="font-size: 0.8em;"><strong>spIn = 0.2</strong></p>
+</center>
+</div>
+
+</div>
+:::
+
+
+## Results of Stream of Inputs
+<div style="font-size: 0.7em;">
+
+Instead of training with a single input pulse followed by a period of rest, we tested the network using a continuous stream of inputs (i.e., no inter-stimulus interval).
+
+
+**Findings:**
+
+- In the streaming case, new inputs consistently degraded the decoder’s ability to recover earlier inputs.
+- Decoder accuracy dropped more sharply as delay increased, compared to the single-pulse setup.
+
+**Conclusion:**  
+New inputs overwrite prior activity in the recurrent network, introducing interference. This shows a key limitation in working memory capacity when systems must store past data in the presence of new, ongoing input. It closely mirrors biological working memory decay under distraction.
+
+
+</div>
+## Decoder Performance and Encoding Strategies
+<div style="font-size: 0.7em;">
+
+To determine the most effective way of encoding information into the network, we compared two input representation schemes:
+
+1. **Magnitude-Based Encoding**: Input identity is encoded by changing the pulse strength of a fixed neuron subset.
+2. **Subset-Based Encoding**: Input identity is encoded by activating distinct neurons (e.g., one-hot encoding), while keeping pulse magnitude fixed.
+
+</div>
+
+## Findings:
+<div style="font-size: 0.6em;">
+- Subset-based encoding consistently produced higher test accuracy across all delays.
+- Magnitude-based encoding decayed rapidly, especially at longer delays.
+
+**Conclusion:**  
+Subset-based encoding enables better memory retention because it minimizes overlap and interference between input representations. This suggests that diverse activation patterns are more robust for preserving sequential information over time in recurrent architectures.
+
+:::
+
+::: {.column width="35%"}
+<center>
+<img src="Figures/Q5_Input_Encoding_Comparison.png" height="300px" />
+</center>
+
+:::
+:::
+</div>
+
+## Discussion
+<div style="font-size: 0.6em;">
+
+Our experiments revealed striking sensitivity in how recurrent neural networks retain information based on the gain parameter (g), which modulates recurrent connection strength. At lower gain values (g = 0.5), network activity quickly dissipated toward zero, severely compromising memory retention. Conversely, higher gain settings (g = 1.5) generated unstable, chaotic activity patterns that overwhelmed input signals and substantially degraded decoding accuracy.
+The optimal performance emerged at intermediate gain values (g ≈ 1.0), where networks achieved a critical balance between stability and adaptability. This equilibrium enabled sustained information preservation across extended delays without introducing significant noise or uncontrolled activity. These findings validate theoretical models suggesting that networks operating at the "edge of chaos" maximize memory capacity by harmonizing persistence with flexibility.
+
+Our decoding analyses further demonstrated that memory performance gradually diminished as temporal delays between inputs and decoding increased. This pattern suggests that even in optimally calibrated networks, memory traces naturally degrade over time—paralleling the biological limitations observed in neural systems.
+These results illuminate fundamental trade-offs inherent to recurrent architectures: enhancing stability improves memory persistence but risks excessive smoothing of network dynamics, while increasing gain heightens sensitivity but potentially triggers instability. Precisely calibrating these parameters proves essential not only for accurate modeling of biological cognition but also for advancing artificial systems dependent on sequential memory, including language models and time-series prediction frameworks.
+</div>
+
+## Conclusion
+
+<div style="font-size: 0.6em;">
+Our project demonstrates that recurrent neural networks serve as powerful computational frameworks for investigating working memory dynamics. Through systematic manipulation of network gain parameters and rigorous analysis of sequential information retention and decoding capabilities, we've illuminated fundamental trade-offs between stability and capacity in memory systems.
+Our findings reveal that optimal memory performance emerges precisely when networks operate within intermediate gain ranges, establishing a critical balance between information persistence and environmental responsiveness. This equilibrium closely parallels biological neural systems, which must maintain information sufficiently for task completion while preventing disruptive runaway activity patterns.
+These results simultaneously validate theoretical neuroscience predictions and provide practical design insights for artificial memory architectures in machine learning applications. However, as with any computational model, important questions remain regarding biological fidelity and the broader applicability of these findings across diverse contexts—questions that motivate our proposed future research directions.
+</div>
+
+## FUTURE DIRECTIONS
+<div style="font-size: 0.5em;">
+
+Our findings establish a foundation for several promising research paths that could enhance our understanding of working memory mechanisms in recurrent neural networks:
+
+**Explore Expanded Parameter Spaces** - Future work should systematically investigate additional network characteristics including sparsity patterns, input noise distributions, and varied time constants to examine their interactions with gain and delay. This comprehensive approach may reveal subtle dynamics governing memory stability and retention capabilities.
+
+**Investigate Advanced Encoding Strategies** - While our current implementation relies on one-hot encoding for input representation, exploring sophisticated alternatives like population coding or distributed representations could significantly enhance memory capacity and noise resilience.
+
+**Integrate Neurobiologically Inspired Mechanisms** - Incorporating elements such as synaptic plasticity rules, targeted inhibitory control circuits, and coordinated oscillatory patterns would increase biological realism and provide deeper insights into how neural systems maintain stable memory representations.
+
+**Validate Through Real-World Sequential Processing** - Extending our modeling framework beyond abstract sequences to practical applications in language processing, sensory prediction, or motor planning could demonstrate the translational value of these findings for artificial intelligence systems.
+
+**Evaluate Long-Term Stability and Scaling Properties** - Conducting simulations with expanded network architectures and extended sequence lengths will help determine whether our observed principles remain consistent across more complex scenarios and realistic computational demands.
+
+By pursuing these research directions, we can continue bridging critical gaps between theoretical models, biological mechanisms, and practical applications in both computational neuroscience and machine learning domains.
+
+</div>
+

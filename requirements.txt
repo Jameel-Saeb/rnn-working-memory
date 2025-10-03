@@ -1,0 +1,24 @@
+# RNN Working Memory Project Requirements
+
+# Core scientific computing
+numpy>=1.21.0
+matplotlib>=3.5.0
+
+# Deep learning framework  
+torch>=1.12.0
+torchvision>=0.13.0
+
+# Jupyter notebook support
+jupyter>=1.0.0
+notebook>=6.4.0
+ipykernel>=6.15.0
+
+# Additional utilities
+scipy>=1.8.0      # For advanced numerical computations
+seaborn>=0.11.0   # Enhanced statistical plotting
+pandas>=1.4.0     # Data manipulation (for future extensions)
+
+# Development tools (optional)
+pytest>=7.0.0     # Unit testing framework
+black>=22.0.0     # Code formatting
+flake8>=4.0.0     # Linting
